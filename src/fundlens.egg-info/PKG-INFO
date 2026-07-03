@@ -1,0 +1,130 @@
+Metadata-Version: 2.4
+Name: fundlens
+Version: 0.1.0
+Summary: A tiny Python client and analytics toolkit for Indian mutual fund data (MFApi.in, no API key required).
+Author: FundLens contributors
+License: MIT
+Project-URL: Homepage, https://github.com/example/fundlens
+Project-URL: Data Source, https://www.mfapi.in
+Keywords: mutual-funds,nav,india,mfapi,finance,analytics
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Financial and Insurance Industry
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Office/Business :: Financial :: Investment
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests>=2.25
+Provides-Extra: analytics
+Requires-Dist: pandas>=1.3; extra == "analytics"
+Requires-Dist: numpy>=1.21; extra == "analytics"
+Provides-Extra: forecast
+Requires-Dist: pandas>=1.3; extra == "forecast"
+Requires-Dist: numpy>=1.21; extra == "forecast"
+Requires-Dist: tensorflow>=2.12; extra == "forecast"
+Provides-Extra: dev
+Requires-Dist: pytest>=7; extra == "dev"
+Requires-Dist: responses>=0.23; extra == "dev"
+Requires-Dist: pandas>=1.3; extra == "dev"
+Requires-Dist: numpy>=1.21; extra == "dev"
+Requires-Dist: tensorflow>=2.12; extra == "dev"
+Requires-Dist: build; extra == "dev"
+Requires-Dist: twine; extra == "dev"
+Dynamic: license-file
+
+# FundLens
+
+A tiny, dependency-light Python client and analytics toolkit for **Indian mutual fund data**, powered by the free and open [MFApi.in](https://www.mfapi.in) API.
+
+**No API key. No signup. No auth.** MFApi.in serves NAV history and scheme metadata for 14,000+ Indian mutual fund schemes, updated daily, sourced from AMFI.
+
+## Install
+
+```bash
+pip install fundlens              # core client (only needs `requests`)
+pip install "fundlens[analytics]" # + pandas/numpy for returns, volatility, portfolio
+pip install "fundlens[forecast]"  # + tensorflow for LSTM NAV forecasting
+```
+
+From source:
+
+```bash
+git clone <your-repo> && cd fundlens
+pip install -e ".[dev]"
+pytest
+```
+
+## Quickstart
+
+```python
+from fundlens import FundClient
+
+client = FundClient()
+
+# 1. Search by name
+hits = client.search("HDFC Flexi Cap")
+for h in hits[:3]:
+    print(h.scheme_code, h.scheme_name)
+
+# 2. Pull a scheme's full NAV history + metadata
+scheme = client.get_scheme(hits[0].scheme_code)
+print(scheme.meta.fund_house, scheme.meta.scheme_category)
+print("Latest NAV:", scheme.latest_nav.nav, "on", scheme.latest_nav.nav_date)
+
+# 3. Analytics (needs the [analytics] extra)
+df = scheme.nav_history()          # pandas DataFrame, date-indexed, ascending
+print(scheme.returns())            # {'1M':.., '1Y':.., '3Y':.. (CAGR), ...}
+print("Annualized vol:", scheme.volatility())
+print("Max drawdown:", scheme.max_drawdown())
+```
+
+## Portfolio analytics
+
+```python
+from fundlens import FundClient
+from fundlens.portfolio import Portfolio
+
+client = FundClient()
+equity = client.get_scheme(118955)   # e.g. a flexi-cap fund
+debt   = client.get_scheme(120503)   # e.g. a corporate bond fund
+
+pf = Portfolio([(equity, 0.7), (debt, 0.3)])   # weights auto-normalize
+print(pf.returns())        # blended trailing returns
+print(pf.volatility())     # blended annualized volatility
+print(pf.index_series())   # weighted value indexed to 100
+print(pf.correlation())    # pairwise daily-return correlation matrix
+```
+
+## API surface
+
+| Method | Description |
+|---|---|
+| `FundClient.search(query)` | Search schemes by (partial) name |
+| `FundClient.list_schemes()` | List all schemes (large; cached) |
+| `FundClient.get_scheme(code)` | Full NAV history + metadata |
+| `FundClient.get_latest_nav(code)` | Latest NAV + metadata only |
+| `Scheme.nav_history()` | NAV as a date-indexed DataFrame |
+| `Scheme.returns(periods=None)` | Trailing returns (CAGR for >1y windows) |
+| `Scheme.volatility()` | Annualized volatility |
+| `Scheme.max_drawdown()` | Max peak-to-trough drawdown |
+| `Portfolio.returns()/volatility()/index_series()/correlation()` | Portfolio-level metrics |
+
+## Design notes
+
+- **Resilient client:** exponential-backoff retries on `429`/`5xx`/connection errors, typed exceptions (`SchemeNotFoundError`, `RateLimitError`, `APIError`), and an in-memory response cache (MFApi updates once daily, so caching is safe and courteous).
+- **Lazy scientific imports:** the core client only needs `requests`; `pandas`/`numpy` are imported only when you call analytics methods.
+- **Tested offline:** the test suite mocks all HTTP with `responses`, so `pytest` runs without network access.
+
+## Data & attribution
+
+Data comes from [MFApi.in](https://www.mfapi.in), which sources NAVs from AMFI (Association of Mutual Funds in India). This package is unaffiliated with MFApi.in or AMFI. Please cache responses and be courteous to the free service.
+
+## License
+
+MIT

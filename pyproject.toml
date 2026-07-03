@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fundlens"
+version = "0.1.0"
+description = "A tiny Python client and analytics toolkit for Indian mutual fund data (MFApi.in, no API key required)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "FundLens contributors" }]
+keywords = ["mutual-funds", "nav", "india", "mfapi", "finance", "analytics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+
+dependencies = [
+    "requests>=2.25",
+]
+
+[project.optional-dependencies]
+analytics = ["pandas>=1.3", "numpy>=1.21"]
+forecast = ["pandas>=1.3", "numpy>=1.21", "tensorflow>=2.12"]
+dev = ["pytest>=7", "responses>=0.23", "pandas>=1.3", "numpy>=1.21", "tensorflow>=2.12", "build", "twine"]
+
+[project.urls]
+Homepage = "https://github.com/example/fundlens"
+"Data Source" = "https://www.mfapi.in"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
