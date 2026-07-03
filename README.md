@@ -128,6 +128,36 @@ python example.py
 
 Do not run `src/fundlens/__init__.py` directly — it is a package initializer and will fail with an import error when executed as a script.
 
+### Sample output
+
+```
+============================================================
+  HDFC Flexi Cap Fund - IDCW Option - Direct Plan
+  Code      : 118954
+  Latest NAV: ₹90.482 on 2026-07-03
+  Category  : Equity Scheme - Flexi Cap Fund
+  NAV history: 3322 days of data
+
+  Returns:
+                      1M: +5.78%
+                      3M: +10.23%
+                      6M: -9.56%
+                      1Y: -4.53%
+                      3Y: +8.97%
+                      5Y: +9.19%
+    since_inception_cagr: +5.21%
+
+  Volatility : 19.46%
+
+============================================================
+Most invested fund (by trading history length):
+  HDFC Flexi Cap Fund - Growth Plan
+  4984 days of NAV data
+
+Note: MFApi.in does not provide AUM figures. NAV history length
+is used as a proxy — older/larger funds accumulate more data points.
+```
+
 ## Data & attribution
 
 Data comes from [MFApi.in](https://www.mfapi.in), which sources NAVs from AMFI (Association of Mutual Funds in India). This package is unaffiliated with MFApi.in or AMFI. Please cache responses and be courteous to the free service.
